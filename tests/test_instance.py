@@ -4,12 +4,20 @@ from firepy.instance import Instance
 class TestInstance:
     def test_start_vm(self, requests_mock):
         m = requests_mock.put('unix:///tmp/test.socket')
-
         vm = Instance('/tmp/test.socket')
         vm.start()
 
         assert m.last_request.json() == {'action_type': 'InstanceStart'}
-        assert m.last_request.scheme == 'unix'
+
+    def test_set_kernel(self, requests_mock):
+        m = requests_mock.put('unix:///tmp/test.socket')
+        vm = Instance('/tmp/test.socket')
+        vm.set_kernel('/tmp/example.ext4')
+
+        assert m.last_request.json() == {
+            "kernel_image_path": '/tmp/example.ext4',
+            "boot_args": "console=ttyS0 reboot=k panic=1 pci=off",
+        }
 
     def test_set_rootfs(self, requests_mock):
         m = requests_mock.put('unix:///tmp/test.socket')
@@ -22,4 +30,3 @@ class TestInstance:
             'is_root_device': True,
             'path_on_host': '/tmp/example.ext4',
         }
-        assert m.last_request.scheme == 'unix'
