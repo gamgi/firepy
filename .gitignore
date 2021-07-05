@@ -1,0 +1,13 @@
+# Binaries
+firecracker
+jailer
+release-*/
+vmlinux.bin
+hello-rootfs.ext4
+
+# Python
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+**/__pycache__/
+*.py[cod]
