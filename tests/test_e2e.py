@@ -14,10 +14,18 @@ def mock_uuid():
 class TestE2E:
     def test_create_vm_calls_firecracker_binary_with_unique_socket(self):
         binary = Mock()
-        fc = Firecracker(binary)
-        fc.create_vm()
+        Firecracker(binary).create_vm()
 
         binary.assert_called_with(**{
             '_bg_exc': True,
             'api-sock': '/tmp/firecracker-id1.socket'
         })
+
+    def test_start_vm_calls_firecracker_api(self, requests_mock):
+        m = requests_mock.put('unix:///tmp/firecracker-id1.socket')
+
+        fc = Firecracker(Mock())
+        fc.create_vm().start()
+
+        assert m.last_request.json() == {'action_type': 'InstanceStart'}
+        assert m.last_request.scheme == 'unix'
