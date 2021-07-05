@@ -4,11 +4,20 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+autopep8 = "*"
 
 [packages]
 sh = "*"
 requests = "*"
 requests-unixsocket = "*"
+pytest = "*"
+pytest-watch = "*"
 
 [requires]
 python_version = "3.9"
+
+[scripts]
+test = "pytest"
+"test:watch" = "ptw -- --disable-pytest-warnings -vv"
+lint = "flake8 ."
+"lint:fix" = "autopep8 --in-place --recursive --exclude=database ."
