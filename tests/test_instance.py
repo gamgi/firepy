@@ -25,7 +25,9 @@ class TestInstance:
 
         assert m.last_request.json() == {
             "kernel_image_path": '/tmp/example.ext4',
-            "boot_args": "console=ttyS0 reboot=k panic=1 pci=off",
+            "boot_args": "console=ttyS0 reboot=k panic=1 pci=off " +
+            "ipv6.disable=1 " +
+            "ip=169.254.0.1::169.254.0.1:255.255.255.252::eth0:off",
         }
 
     def test_set_rootfs(self, requests_mock):
@@ -38,6 +40,19 @@ class TestInstance:
             'is_read_only': False,
             'is_root_device': True,
             'path_on_host': '/tmp/example.ext4',
+        }
+
+    def test_create_network_interface(self, requests_mock):
+        m = requests_mock.put(
+            'http+unix://%2Ftmp%2Ftest.socket/network-interfaces/1')
+        vm = Instance('/tmp/test.socket')
+        vm.create_network_interface(id=1)
+
+        assert m.last_request.json() == {
+            'guest_mac': '02:FC:00:00:00:00',
+            'host_dev_name': 'fc-0-tap0',
+            'id': 1,
+            'iface_id': '1',
         }
 
     def test_create_snapshot(self, requests_mock):

@@ -32,10 +32,20 @@ def handle_errors(func):
 class Instance:
     conn: Connection
 
-    def __init__(self, socket_path: str, stderr: StringIO = None):
+    def __init__(self, socket_path: str, stderr: StringIO = None, id=0):
         self.conn = Connection(socket_path)
         self.stderr = stderr
-        # TODO check socket exists
+        self.id = id
+
+    def _network_args(self):
+        """Kernel network boot args.
+        From https://github.com/firecracker-microvm/firecracker-demo/blob/main/start-firecracker.sh"""  # noqa: E501
+
+        id = self.id
+        fc_ip = f'169.254.{(4 * id + 1) // 256}.{(4 * id + 1) % 256}'
+        tap_ip = fc_ip
+        mask = "255.255.255.252"
+        return f'ipv6.disable=1 ip={fc_ip}::{tap_ip}:{mask}::eth0:off'
 
     @handle_errors
     def start(self):
@@ -57,9 +67,11 @@ class Instance:
 
     @handle_errors
     def set_kernel(self, kernel_path: str, **kwargs):
+        boot_args = "console=ttyS0 reboot=k panic=1 pci=off " +\
+            self._network_args()
         self.conn.put('/boot-source', json={
             "kernel_image_path": kernel_path,
-            "boot_args": "console=ttyS0 reboot=k panic=1 pci=off",
+            "boot_args": boot_args,
             **kwargs
         })
 
@@ -70,6 +82,17 @@ class Instance:
             "path_on_host": rootfs_path,
             "is_root_device": True,
             "is_read_only": False,
+            **kwargs
+        })
+
+    @handle_errors
+    def create_network_interface(self, **kwargs):
+        mac = f'02:FC:00:00:{self.id // 256:02x}:{self.id % 256:02x}'
+        name = f'fc-{self.id}-tap0'
+        self.conn.put('/network-interfaces/1', json={
+            "iface_id": "1",
+            "guest_mac": mac,
+            "host_dev_name": name,
             **kwargs
         })
 
