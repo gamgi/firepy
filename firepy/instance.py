@@ -1,14 +1,24 @@
+from io import StringIO
+from requests.exceptions import ConnectionError, HTTPError
 from firepy.connection import Connection
+from firepy.exceptions import err_from_stderr
 
 
 class Instance:
     conn: Connection
 
-    def __init__(self, socket_path: str):
+    def __init__(self, socket_path: str, stderr: StringIO = None):
         self.conn = Connection(socket_path)
+        self.stderr = stderr
 
     def start(self):
-        self.conn.put('/actions', json={'action_type': 'InstanceStart'})
+        try:
+            self.conn.put('/actions', json={'action_type': 'InstanceStart'})
+        except (ConnectionError, HTTPError) as err:
+            if self.stderr is not None:
+                raise err_from_stderr(self.stderr) from err
+            else:
+                raise
 
     def pause(self):
         pass

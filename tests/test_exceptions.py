@@ -1,5 +1,5 @@
 import pytest
-from firepy.exceptions import err_from_stderr, FirecrackerError
+from firepy.exceptions import err_from_returncode, FirecrackerError
 from sh import ErrorReturnCode
 
 EXAMPLE_STDERR = '''
@@ -16,7 +16,7 @@ class TestExceptions:
         error.exit_code = 153
 
         with pytest.raises(FirecrackerError, match="Firecracker panicked"):
-            raise err_from_stderr(error)
+            raise err_from_returncode(error)
 
     def test_err_from_stderr_returns_unknown_error(self, requests_mock):
         error = ErrorReturnCode('firecracker --foo',
@@ -25,4 +25,4 @@ class TestExceptions:
         error.exit_code = 1
 
         with pytest.raises(RuntimeError, match="Unknown error"):
-            raise err_from_stderr(error)
+            raise err_from_returncode(error)

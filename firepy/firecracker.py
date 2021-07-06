@@ -1,9 +1,10 @@
 import re
+from io import StringIO
 from pathlib import Path
 from uuid import uuid4
 from sh import Command, ErrorReturnCode, TimeoutException
 from firepy.instance import Instance
-from firepy.exceptions import err_from_stderr
+from firepy.exceptions import err_from_returncode
 
 
 REGEX_STDERR_MESSAGE = re.compile('.*? \\[[\\w -:]+\\] (.*)', re.MULTILINE)
@@ -22,12 +23,13 @@ class Firecracker:
         return socket_path
 
     def _create_instance(self, socket_path, sleep=2) -> Instance:
+        stderr = StringIO()
         try:
-            self.run("--api-sock", socket_path, _bg=True,
-                     _bg_exc=True).wait(sleep)
+            self.run("--api-sock", socket_path,
+                     _bg=True, _err=stderr).wait(sleep)
         except TimeoutException:
             pass
-        vm = Instance(socket_path)
+        vm = Instance(socket_path, stderr)
         self.vms.append(vm)
         return vm
 
@@ -36,4 +38,4 @@ class Firecracker:
         try:
             return self._create_instance(_socket_path)
         except ErrorReturnCode as err:
-            raise err_from_stderr(err) from err
+            raise err_from_returncode(err) from err
