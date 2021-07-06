@@ -9,6 +9,15 @@ class TestInstance:
 
         assert m.last_request.json() == {'action_type': 'InstanceStart'}
 
+    def test_pause_vm(self, requests_mock):
+        m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/vm')
+        vm = Instance('/tmp/test.socket')
+        vm.pause()
+
+        assert m.last_request.json() == {
+            "state": 'Paused',
+        }
+
     def test_set_kernel(self, requests_mock):
         m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/boot-source')
         vm = Instance('/tmp/test.socket')
@@ -29,4 +38,28 @@ class TestInstance:
             'is_read_only': False,
             'is_root_device': True,
             'path_on_host': '/tmp/example.ext4',
+        }
+
+    def test_create_snapshot(self, requests_mock):
+        m = requests_mock.put(
+            'http+unix://%2Ftmp%2Ftest.socket/snapshot/create')
+        vm = Instance('/tmp/test.socket')
+        vm.create_snapshot('/tmp/foo', '/tmp/bar')
+
+        assert m.last_request.json() == {
+            "snapshot_type": "Full",
+            "snapshot_path": '/tmp/foo',
+            "mem_file_path": '/tmp/bar',
+        }
+
+    def test_load_snapshot(self, requests_mock):
+        m = requests_mock.put(
+            'http+unix://%2Ftmp%2Ftest.socket/snapshot/load')
+        vm = Instance('/tmp/test.socket')
+        vm.load_snapshot('/tmp/foo', '/tmp/bar')
+
+        assert m.last_request.json() == {
+            "snapshot_path": '/tmp/foo',
+            "mem_file_path": '/tmp/bar',
+            "resume_vm": True
         }

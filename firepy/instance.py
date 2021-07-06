@@ -72,3 +72,23 @@ class Instance:
             "is_read_only": False,
             **kwargs
         })
+
+    @handle_errors
+    def create_snapshot(self, snapshot_path: str, mem_file_path: str,
+                        snapshot_type='Full', **kwargs):
+        self.conn.put('/snapshot/create', json={
+            "snapshot_type": snapshot_type,
+            "snapshot_path": snapshot_path,
+            "mem_file_path": mem_file_path,
+            **kwargs
+        })
+
+    @handle_errors
+    def load_snapshot(self, snapshot_path: str, mem_file_path: str,
+                      resume_vm=True, **kwargs):
+        self.conn.put('/snapshot/load', json={
+            "snapshot_path": snapshot_path,
+            "mem_file_path": mem_file_path,
+            "resume_vm": resume_vm,
+            **kwargs
+        })
