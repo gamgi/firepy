@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, ANY
 from firepy.firecracker import Firecracker
 
 MOCK_IDS = ['id1', 'id2', 'id3']
@@ -16,16 +16,17 @@ class TestE2E:
         binary = Mock()
         Firecracker(binary).create_vm()
 
-        binary.assert_called_with(**{
-            '_bg_exc': True,
-            'api-sock': '/tmp/firecracker-id1.socket'
-        })
+        binary.assert_called_with(
+            '--api-sock', '/tmp/firecracker-id1.socket',
+            **{'_bg': True, '_err': ANY}
+        )
 
     def test_start_vm_calls_firecracker_api(self, requests_mock):
-        m = requests_mock.put('unix:///tmp/firecracker-id1.socket')
+        m = requests_mock.put(
+            'http+unix://%2Ftmp%2Ffirecracker-id1.socket/actions')
 
         fc = Firecracker(Mock())
         fc.create_vm().start()
 
         assert m.last_request.json() == {'action_type': 'InstanceStart'}
-        assert m.last_request.scheme == 'unix'
+        assert m.last_request.scheme == 'http+unix'
