@@ -6,13 +6,14 @@ verify_ssl = true
 [dev-packages]
 autopep8 = "*"
 requests-mock = "*"
+pytest = "*"
+pytest-watch = "*"
+mypy = "*"
 
 [packages]
 sh = "*"
 requests = "*"
 requests-unixsocket = "*"
-pytest = "*"
-pytest-watch = "*"
 
 [requires]
 python_version = "3.9"
