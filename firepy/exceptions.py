@@ -10,6 +10,10 @@ class FirecrackerError(RuntimeError):
     pass
 
 
+class FirecrackerApiError(ValueError):
+    pass
+
+
 def _error_str(error: Union[str, StringIO]) -> str:
     if isinstance(error, str):
         error_str = error
@@ -19,8 +23,7 @@ def _error_str(error: Union[str, StringIO]) -> str:
     return error_str
 
 
-def err_from_stderr(error: Union[str, StringIO],
-                    exit_code: int = None) -> RuntimeError:
+def err_from_stderr(error: Union[str, StringIO], exit_code: int = None):
     error_str = _error_str(error)
     errors = list(REGEX_STDERR_MESSAGE.findall(error_str))
 

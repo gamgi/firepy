@@ -1,7 +1,7 @@
 from io import StringIO
 from requests.exceptions import ConnectionError, HTTPError
 from firepy.connection import Connection
-from firepy.exceptions import err_from_stderr
+from firepy.exceptions import err_from_stderr, FirecrackerApiError
 
 
 class Instance:
@@ -11,20 +11,28 @@ class Instance:
         self.conn = Connection(socket_path)
         self.stderr = stderr
 
-    def start(self):
+    def _put(self, path: str, **kwargs):
         try:
-            self.conn.put('/actions', json={'action_type': 'InstanceStart'})
-        except (ConnectionError, HTTPError) as err:
+            self.conn.put(path, **kwargs)
+        except HTTPError as err:
+            res = err.response.json()
+            if 'fault_message' in res:
+                raise FirecrackerApiError(res['fault_message'])
+            raise
+        except ConnectionError as err:
             if self.stderr is not None:
                 raise err_from_stderr(self.stderr) from err
             else:
                 raise
 
+    def start(self):
+        self._put('/actions', json={'action_type': 'InstanceStart'})
+
     def pause(self):
         pass
 
     def set_config(self, **kwargs):
-        self.conn.put('/actions', json={
+        self._put('/machine-config', json={
             **kwargs
         })
 
