@@ -4,14 +4,14 @@ from firepy.vm import Vm
 class TestVm:
     def test_start_vm(self, requests_mock):
         m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/actions')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.start()
 
         assert m.last_request.json() == {'action_type': 'InstanceStart'}
 
     def test_pause_vm(self, requests_mock):
         m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/vm')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.pause()
 
         assert m.last_request.json() == {
@@ -20,7 +20,7 @@ class TestVm:
 
     def test_set_kernel(self, requests_mock):
         m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/boot-source')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.set_kernel('/tmp/example.ext4')
 
         assert m.last_request.json() == {
@@ -32,7 +32,7 @@ class TestVm:
 
     def test_set_rootfs(self, requests_mock):
         m = requests_mock.put('http+unix://%2Ftmp%2Ftest.socket/drives/rootfs')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.set_rootfs('/tmp/example.ext4')
 
         assert m.last_request.json() == {
@@ -45,7 +45,7 @@ class TestVm:
     def test_create_network_interface(self, requests_mock):
         m = requests_mock.put(
             'http+unix://%2Ftmp%2Ftest.socket/network-interfaces/1')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.create_network_interface(id=1)
 
         assert m.last_request.json() == {
@@ -58,7 +58,7 @@ class TestVm:
     def test_create_snapshot(self, requests_mock):
         m = requests_mock.put(
             'http+unix://%2Ftmp%2Ftest.socket/snapshot/create')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.create_snapshot('/tmp/foo', '/tmp/bar')
 
         assert m.last_request.json() == {
@@ -70,7 +70,7 @@ class TestVm:
     def test_load_snapshot(self, requests_mock):
         m = requests_mock.put(
             'http+unix://%2Ftmp%2Ftest.socket/snapshot/load')
-        vm = Vm('/tmp/test.socket')
+        vm = Vm(0, '/tmp/test.socket')
         vm.load_snapshot('/tmp/foo', '/tmp/bar')
 
         assert m.last_request.json() == {

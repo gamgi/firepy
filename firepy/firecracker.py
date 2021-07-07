@@ -31,14 +31,14 @@ class Firecracker:
     #     if not Path(socket_path).exists():
     #         raise FirecrackerError('Failed to start VM or socket missing')
 
-    def _create_vm(self, socket_path: str = None, sleep=2) -> Vm:
+    def _create_vm(self, id: int, socket_path: str = None, sleep=2) -> Vm:
         stderr = StringIO()
         try:
             self.run("--api-sock", socket_path,
                      _bg=True, _err=stderr).wait(sleep)
         except TimeoutException:
             pass
-        vm = Vm(socket_path, stderr)
+        vm = Vm(id, socket_path, stderr)
         self.vms.append(vm)
         return vm
 
@@ -48,7 +48,7 @@ class Firecracker:
 
         try:
             self._init_socket(vm_socket_path)
-            vm = self._create_vm(vm_socket_path, vm_id)
+            vm = self._create_vm(vm_id, vm_socket_path)
             # self._check_socket(vm_socket_path)
         except ErrorReturnCode as err:
             raise err_from_returncode(err) from err

@@ -33,10 +33,10 @@ def handle_errors(func):
 class Vm:
     conn: Connection
 
-    def __init__(self, socket_path: str, stderr: StringIO = None, id=0):
+    def __init__(self, id: int, socket_path: str, stderr: StringIO = None):
+        self.id = id
         self.conn = Connection(socket_path)
         self.stderr = stderr
-        self.id = id
 
     @handle_errors
     def start(self):
