@@ -13,7 +13,7 @@ def handle_errors(func):
     - checks instance stderr for error messages
     """
     @wraps(func)
-    def wrapper(self: 'Instance', *args, **kwargs):
+    def wrapper(self: 'Vm', *args, **kwargs):
         try:
             func(self, *args, **kwargs)
         except HTTPError as err:
@@ -24,12 +24,11 @@ def handle_errors(func):
         except ConnectionError as err:
             if self.stderr is not None:
                 raise err_from_stderr(self.stderr) from err
-            else:
-                raise
+            raise
     return wrapper
 
 
-class Instance:
+class Vm:
     conn: Connection
 
     def __init__(self, socket_path: str, stderr: StringIO = None, id=0):
