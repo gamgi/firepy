@@ -3,6 +3,8 @@ from io import StringIO
 from requests.exceptions import ConnectionError, HTTPError
 from firepy.connection import Connection
 from firepy.exceptions import err_from_stderr, FirecrackerApiError
+from firepy.utils.network_utils import network_mac, network_tap_name
+from firepy.utils.firecracker_utils import kernel_boot_args
 
 
 def handle_errors(func):
@@ -36,16 +38,6 @@ class Vm:
         self.stderr = stderr
         self.id = id
 
-    def _network_args(self):
-        """Kernel network boot args.
-        From https://github.com/firecracker-microvm/firecracker-demo/blob/main/start-firecracker.sh"""  # noqa: E501
-
-        id = self.id
-        fc_ip = f'169.254.{(4 * id + 1) // 256}.{(4 * id + 1) % 256}'
-        tap_ip = fc_ip
-        mask = "255.255.255.252"
-        return f'ipv6.disable=1 ip={fc_ip}::{tap_ip}:{mask}::eth0:off'
-
     @handle_errors
     def start(self):
         self.conn.put('/actions', json={'action_type': 'InstanceStart'})
@@ -65,9 +57,9 @@ class Vm:
         })
 
     @handle_errors
-    def set_kernel(self, kernel_path: str, **kwargs):
-        boot_args = "console=ttyS0 reboot=k panic=1 pci=off " +\
-            self._network_args()
+    def set_kernel(self, kernel_path: str, override_boot_args: dict = {},
+                   **kwargs):
+        boot_args = kernel_boot_args(self.id, override_boot_args)
         self.conn.put('/boot-source', json={
             "kernel_image_path": kernel_path,
             "boot_args": boot_args,
@@ -86,12 +78,10 @@ class Vm:
 
     @handle_errors
     def create_network_interface(self, **kwargs):
-        mac = f'02:FC:00:00:{self.id // 256:02x}:{self.id % 256:02x}'
-        name = f'fc-{self.id}-tap0'
         self.conn.put('/network-interfaces/1', json={
             "iface_id": "1",
-            "guest_mac": mac,
-            "host_dev_name": name,
+            "guest_mac": network_mac(self.id),
+            "host_dev_name": network_tap_name(self.id),
             **kwargs
         })
 
