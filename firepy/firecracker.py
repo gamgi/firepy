@@ -1,3 +1,4 @@
+from typing import Union
 import re
 from io import StringIO
 from pathlib import Path
@@ -7,7 +8,7 @@ from firepy.exceptions import err_from_returncode
 
 
 REGEX_STDERR_MESSAGE = re.compile('.*? \\[[\\w -:]+\\] (.*)', re.MULTILINE)
-DEFAULT_FIRECRACKER = Command('./firecracker')
+DEFAULT_COMMAND = Command('./firecracker')
 
 
 class Firecracker:
@@ -15,8 +16,11 @@ class Firecracker:
     run: Command
     _id: int = 0
 
-    def __init__(self, command: Command = None):
-        self.run = command or DEFAULT_FIRECRACKER
+    def __init__(self, command: Union[str, Command] = DEFAULT_COMMAND):
+        if isinstance(command, str):
+            self.run = Command(command)
+        else:
+            self.run = command
 
     def _next_free_id(self) -> int:
         # TODO: reuse ids
