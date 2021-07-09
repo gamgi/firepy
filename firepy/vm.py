@@ -1,5 +1,7 @@
+from typing import Optional
 from functools import wraps
 from io import StringIO
+from sh import RunningCommand
 from requests.exceptions import ConnectionError, HTTPError
 from firepy.connection import Connection
 from firepy.exceptions import err_from_stderr, FirecrackerApiError
@@ -32,12 +34,30 @@ def handle_errors(func):
 
 
 class Vm:
+    id: int
     conn: Connection
+    stderr: Optional[StringIO]
+    handle: Optional[RunningCommand]
 
-    def __init__(self, id: int, socket_path: str, stderr: StringIO = None):
+    def __init__(self, id: int, socket_path: str, stderr: StringIO = None, handle: RunningCommand = None):
         self.id = id
         self.conn = Connection(socket_path)
         self.stderr = stderr
+        self.handle = handle
+
+    def wait(self, **kwargs):
+        if not self.handle:
+            raise FirecrackerApiError('No VM handle to wait for')
+
+        self.handle.wait(**kwargs)
+        logger.info('VM process exited')
+
+    def kill(self):
+        if not self.handle:
+            raise FirecrackerApiError('No VM handle to kill')
+
+        self.handle.kill()
+        logger.info('VM process killed')
 
     @handle_errors
     def start(self):

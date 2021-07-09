@@ -5,6 +5,7 @@ Firecracker bindings for Python.
 ## Usage
 
 ```py
+from firepy import Firecracker
 from pathlib import Path
 kernel = Path('./vmlinux.bin')
 rootfs = Path('./hello-rootfs.ext4')
@@ -16,6 +17,7 @@ vm.set_rootfs(str(rootfs.absolute()))
 vm.create_network_interface()
 
 vm.start()
+vm.wait()
 ```
 
 ## Troubleshooting

@@ -38,11 +38,12 @@ class Firecracker:
     def _create_vm(self, id: int, socket_path: str = None, sleep=2) -> Vm:
         stderr = StringIO()
         try:
-            self.run("--api-sock", socket_path,
-                     _bg=True, _err=stderr).wait(sleep)
+            handle = self.run("--api-sock", socket_path,
+                              _bg=True, _err=stderr).wait(sleep)
         except TimeoutException:
+            handle = None
             pass
-        vm = Vm(id, socket_path, stderr)
+        vm = Vm(id, socket_path, stderr, handle)
         self.vms.append(vm)
         return vm
 
