@@ -1,4 +1,5 @@
 from typing import Union
+import sys
 import re
 from io import StringIO
 from pathlib import Path
@@ -35,9 +36,11 @@ class Firecracker:
     #     if not Path(socket_path).exists():
     #         raise FirecrackerError('Failed to start VM or socket missing')
 
-    def _create_vm(self, id: int, socket_path: str = None, sleep=2) -> Vm:
+    def _create_vm(self, id: int, socket_path: str = None, sleep=2, attach_stdout=False) -> Vm:
+        stdout = sys.stdout if attach_stdout else None
         stderr = StringIO()
-        handle = self.run("--api-sock", socket_path, _bg=True, _err=stderr)
+        handle = self.run("--api-sock", socket_path,
+                          _bg=True, _err=stderr, _out=stdout)
 
         try:
             handle.wait(sleep)
@@ -48,13 +51,13 @@ class Firecracker:
         self.vms.append(vm)
         return vm
 
-    def create_vm(self, jailed=True, socket_path: str = None) -> Vm:
+    def create_vm(self, jailed=True, socket_path: str = None, **kwargs) -> Vm:
         vm_id = self._next_free_id()
         vm_socket_path = socket_path or f'/tmp/firecracker-{vm_id}.socket'
 
         try:
             self._init_socket(vm_socket_path)
-            vm = self._create_vm(vm_id, vm_socket_path)
+            vm = self._create_vm(vm_id, vm_socket_path, **kwargs)
             logger.info(f'created VM with with socket {vm_socket_path}')
             # self._check_socket(vm_socket_path)
         except ErrorReturnCode as err:
