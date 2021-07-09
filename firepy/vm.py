@@ -5,6 +5,7 @@ from firepy.connection import Connection
 from firepy.exceptions import err_from_stderr, FirecrackerApiError
 from firepy.utils.network_utils import network_mac, network_tap_name
 from firepy.utils.firecracker_utils import kernel_boot_args
+from firepy.utils.logging_utils import logger
 
 
 def handle_errors(func):
@@ -40,14 +41,17 @@ class Vm:
 
     @handle_errors
     def start(self):
+        logger.debug('starting VM')
         self.conn.put('/actions', json={'action_type': 'InstanceStart'})
 
     @handle_errors
     def pause(self):
+        logger.debug('pausing VM')
         self.conn.put('/vm', json={'state': 'Paused'})
 
     @handle_errors
     def resume(self):
+        logger.debug('resuming VM')
         self.conn.put('/vm', json={'state': 'Resumed'})
 
     @handle_errors

@@ -5,7 +5,7 @@ from pathlib import Path
 from sh import Command, ErrorReturnCode, TimeoutException
 from firepy.vm import Vm
 from firepy.exceptions import err_from_returncode
-
+from firepy.utils.logging_utils import logger
 
 REGEX_STDERR_MESSAGE = re.compile('.*? \\[[\\w -:]+\\] (.*)', re.MULTILINE)
 DEFAULT_COMMAND = Command('./firecracker')
@@ -53,6 +53,7 @@ class Firecracker:
         try:
             self._init_socket(vm_socket_path)
             vm = self._create_vm(vm_id, vm_socket_path)
+            logger.info(f'created VM with with socket {vm_socket_path}')
             # self._check_socket(vm_socket_path)
         except ErrorReturnCode as err:
             raise err_from_returncode(err) from err
