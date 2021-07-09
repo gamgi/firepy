@@ -8,7 +8,7 @@ def boot_args_str(args: dict):
 def kernel_network_boot_args(id: int) -> dict:
     fc_ip = network_ip(id)
     tap_ip = fc_ip
-    mask = "255.255.255.252"
+    mask = "255.255.255.255"
     return {
         'ipv6.disable': '1',
         'ip': f'{fc_ip}::{tap_ip}:{mask}::eth0:off'
