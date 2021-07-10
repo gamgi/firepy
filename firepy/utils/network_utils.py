@@ -1,5 +1,5 @@
 def network_ip(id: int) -> str:
-    return f'172.16.{(4 * id + 2) // 256}.{(4 * id + 2) % 256}'
+    return f'169.254.{(4 * id + 1) // 256}.{(4 * id + 1) % 256}'
 
 
 def network_mac(id: int) -> str:
@@ -7,4 +7,5 @@ def network_mac(id: int) -> str:
 
 
 def network_tap_name(id: int) -> str:
-    return f'fc-{id}-tap0'
+    return 'tap0'
+    # return f'fc-{id}-tap0'

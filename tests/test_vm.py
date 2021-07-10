@@ -27,7 +27,7 @@ class TestVm:
             "kernel_image_path": '/tmp/example.ext4',
             "boot_args": "console=ttyS0 reboot=k panic=1 pci=off " +
             "ipv6.disable=1 " +
-            "ip=172.16.0.2::172.16.0.2:255.255.255.255::eth0:off",
+            "ip=169.254.0.1::169.254.0.1:255.255.255.255::eth0:off",
         }
 
     def test_set_rootfs(self, requests_mock):
@@ -50,7 +50,7 @@ class TestVm:
 
         assert m.last_request.json() == {
             'guest_mac': '02:FC:00:00:00:00',
-            'host_dev_name': 'fc-0-tap0',
+            'host_dev_name': 'tap0',
             'id': 1,
             'iface_id': '1',
         }
