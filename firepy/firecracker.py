@@ -1,5 +1,4 @@
 from typing import Union
-import sys
 import re
 from io import StringIO
 from pathlib import Path
@@ -36,11 +35,11 @@ class Firecracker:
     #     if not Path(socket_path).exists():
     #         raise FirecrackerError('Failed to start VM or socket missing')
 
-    def _create_vm(self, id: int, socket_path: str = None, sleep=2, attach_stdout=False) -> Vm:
-        stdout = sys.stdout if attach_stdout else None
+    def _create_vm(self, id: int, socket_path: str = None, sleep=2,
+                   stdout: StringIO = None, stdin: StringIO = None) -> Vm:
         stderr = StringIO()
         handle = self.run("--api-sock", socket_path,
-                          _bg=True, _err=stderr, _out=stdout)
+                          _bg=True, _err=stderr, _out=stdout, _in=stdin)
 
         try:
             handle.wait(sleep)

@@ -9,7 +9,7 @@ class TestE2E:
 
         binary.assert_called_with(
             '--api-sock', '/tmp/firecracker-0.socket',
-            **{'_bg': True, '_err': ANY, '_out': None}
+            **{'_bg': True, '_err': ANY, '_out': None, '_in': None}
         )
 
     def test_start_vm_calls_firecracker_api(self, requests_mock):
