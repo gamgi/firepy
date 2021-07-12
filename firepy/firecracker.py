@@ -5,7 +5,9 @@ from pathlib import Path
 from sh import Command, ErrorReturnCode, TimeoutException
 from firepy.vm import Vm
 from firepy.exceptions import err_from_returncode
+from firepy.tap import Tap
 from firepy.utils.logging_utils import logger
+from firepy.utils.network_utils import network_tap_name
 
 REGEX_STDERR_MESSAGE = re.compile('.*? \\[[\\w -:]+\\] (.*)', re.MULTILINE)
 DEFAULT_COMMAND = Command('./firecracker')
@@ -35,8 +37,10 @@ class Firecracker:
     #     if not Path(socket_path).exists():
     #         raise FirecrackerError('Failed to start VM or socket missing')
 
-    def _create_vm(self, id: int, socket_path: str = None, sleep=2,
+    def _create_vm(self, id: int, socket_path: str, vm_tap_name: str, sleep=2,
                    stdout: StringIO = None, stdin: StringIO = None) -> Vm:
+        Tap.create(vm_tap_name, host_ip="172.16.0.1")
+
         stderr = StringIO()
         handle = self.run("--api-sock", socket_path,
                           _bg=True, _err=stderr, _out=stdout, _in=stdin)
@@ -52,11 +56,12 @@ class Firecracker:
 
     def create_vm(self, jailed=True, socket_path: str = None, **kwargs) -> Vm:
         vm_id = self._next_free_id()
+        vm_tap_name = network_tap_name(vm_id)
         vm_socket_path = socket_path or f'/tmp/firecracker-{vm_id}.socket'
 
         try:
             self._init_socket(vm_socket_path)
-            vm = self._create_vm(vm_id, vm_socket_path, **kwargs)
+            vm = self._create_vm(vm_id, vm_socket_path, vm_tap_name, **kwargs)
             logger.info(f'created VM with with socket {vm_socket_path}')
             # self._check_socket(vm_socket_path)
         except ErrorReturnCode as err:
